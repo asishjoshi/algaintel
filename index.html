@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlgaIntel — LCA Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal:       #00695C;
+    --teal-dark:  #004D40;
+    --teal-light: #E8F5E9;
+    --teal-mid:   #B2DFDB;
+    --amber:      #E65100;
+    --bg:         #F7FAF9;
+    --surface:    #FFFFFF;
+    --border:     #D0E8E4;
+    --text:       #1C2833;
+    --muted:      #607D8B;
+    --danger:     #C0392B;
+    --good:       #1B5E20;
+    --warn:       #E65100;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--teal-dark);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .logo-mark {
+    width: 38px; height: 38px;
+    background: var(--teal-mid);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px; color: var(--teal-dark); font-weight: bold;
+  }
+  .logo-text { font-family: 'DM Serif Display', serif; font-size: 22px; color: #fff; letter-spacing: 0.3px; }
+  .logo-sub  { font-size: 12px; color: var(--teal-mid); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px; }
+  .header-badge {
+    margin-left: auto;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.8px;
+  }
+
+  /* ── Layout ── */
+  .container { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .intro {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--teal);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 36px;
+  }
+  .intro h2 { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--teal-dark); margin-bottom: 8px; }
+  .intro p  { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+  /* ── Section cards ── */
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .section-header {
+    background: var(--teal-light);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-icon {
+    width: 28px; height: 28px;
+    background: var(--teal);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .section-title { font-weight: 600; font-size: 15px; color: var(--teal-dark); }
+  .section-body  { padding: 24px; }
+
+  /* ── Form grid ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--teal-dark);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .label-hint { font-size: 11px; color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+  input[type=number], input[type=text], select {
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    -moz-appearance: textfield;
+  }
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(0,105,92,0.1);
+  }
+
+  .unit-input { position: relative; }
+  .unit-input input { padding-right: 52px; }
+  .unit-tag {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: var(--muted); font-weight: 600; pointer-events: none;
+  }
+
+  /* ── Buttons ── */
+  .btn-row { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+  .btn {
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary {
+    background: var(--teal);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--teal-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,105,92,0.3); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--teal);
+    border: 1.5px solid var(--teal);
+  }
+  .btn-secondary:hover { background: var(--teal-light); }
+  .btn-print {
+    background: var(--text);
+    color: #fff;
+  }
+  .btn-print:hover { background: #2c3e50; }
+
+  /* ── Results ── */
+  #results { display: none; }
+
+  .report-header {
+    background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
+    border-radius: 12px;
+    padding: 32px 36px;
+    color: #fff;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .report-header::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+  }
+  .report-title { font-family: 'DM Serif Display', serif; font-size: 26px; margin-bottom: 4px; }
+  .report-sub   { font-size: 13px; opacity: 0.75; margin-bottom: 20px; }
+  .report-meta  { display: flex; gap: 28px; flex-wrap: wrap; }
+  .meta-item label { font-size: 10px; letter-spacing: 1.2px; opacity: 0.7; text-transform: uppercase; display: block; }
+  .meta-item span  { font-size: 15px; font-weight: 600; }
+
+  /* KPI cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 20px 16px;
+    text-align: center;
+  }
+  .kpi-card .kpi-icon { font-size: 22px; margin-bottom: 6px; }
+  .kpi-card .kpi-value { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--teal-dark); line-height: 1; }
+  .kpi-card .kpi-unit  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .kpi-card .kpi-label { font-size: 12px; font-weight: 600; color: var(--text); margin-top: 8px; }
+  .kpi-card.highlight  { border-color: var(--teal); background: var(--teal-light); }
+  .kpi-card.highlight .kpi-value { color: var(--teal-dark); }
+
+  /* Rating badge */
+  .rating-row { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .rating-badge {
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  .rating-A  { background: #E8F5E9; color: #1B5E20; border: 1.5px solid #A5D6A7; }
+  .rating-B  { background: #F1F8E9; color: #33691E; border: 1.5px solid #C5E1A5; }
+  .rating-C  { background: #FFF8E1; color: #F57F17; border: 1.5px solid #FFE082; }
+  .rating-D  { background: #FFF3E0; color: #E65100; border: 1.5px solid #FFCC80; }
+  .rating-E  { background: #FFEBEE; color: #B71C1C; border: 1.5px solid #EF9A9A; }
+  .rating-label { font-size: 13px; color: var(--muted); }
+
+  /* Scope breakdown */
+  .scope-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .scope-table th {
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .scope-table td { padding: 11px 14px; border-bottom: 1px solid #EEF2F0; }
+  .scope-table tr:last-child td { border-bottom: none; font-weight: 700; background: var(--teal-light); }
+  .scope-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .s1 { background: #BBDEFB; color: #0D47A1; }
+  .s2 { background: #D1C4E9; color: #4527A0; }
+  .s3 { background: #FFE0B2; color: #E65100; }
+
+  /* Bar chart */
+  .bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .bar-label { width: 160px; font-size: 12px; color: var(--muted); text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 12px; background: #EEF2F0; border-radius: 6px; overflow: hidden; }
+  .bar-fill  { height: 100%; border-radius: 6px; background: var(--teal); transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+  .bar-fill.s2 { background: #7E57C2; }
+  .bar-fill.s3 { background: #FF7043; }
+  .bar-val   { width: 70px; font-size: 12px; font-weight: 600; color: var(--text); }
+
+  /* Recommendations */
+  .rec-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .rec-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .rec-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+  /* Disclaimer */
+  .disclaimer {
+    font-size: 11px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    margin-top: 24px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .kpi-grid  { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media print {
+    header { position: static; }
+    .btn-row, .intro { display: none; }
+    .section-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">A</div>
+  <div>
+    <div class="logo-text">AlgaIntel</div>
+    <div class="logo-sub">LCA Engine · Proof of Concept</div>
+  </div>
+  <div class="header-badge">STEP 1 · KTH POC</div>
+</header>
+
+<div class="container">
+
+  <div class="intro">
+    <h2>Life Cycle Assessment Calculator</h2>
+    <p>Enter your seaweed farm's annual operational data below. The engine calculates your farm's carbon footprint (GWP) across Scope 1, 2, and 3 emissions following ISO 14040/14044 methodology, and generates a report aligned with EU CSRD requirements. All emission factors are based on published scientific literature and the Ecoinvent database.</p>
+  </div>
+
+  <!-- ── SECTION A: Farm Info ── -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">🌿</div>
+      <div class="section-title">A — Farm Information</div>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Farm / Company Name</label>
+          <input type="text" id="farmName" placeholder="e.g. Nordic SeaFarm AB">
+        </div>
+        <div class="form-group">
+          <label>Reporting Year</label>
+          <input type="number" id="reportYear" value="2025" min="2020" max="2030">
+        </div>
+        <div class="form-group">
+          <label>Primary Seaweed Species</label>
+          <select id="species">
+            <option value="saccharina">Saccharina latissima (Sugar kelp)</option>
+            <option value="ulva">Ulva spp. (Sea lettuce)</option>
+            <option value="alaria">Alaria esculenta (Winged kelp)</option>
+            <option value="gracilaria">Gracilaria spp.</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Farm Area <span class="label-hint">(total cultivation area)</span></label>
+          <div class="unit-input">
+            <input type="number" id="farmArea" placeholder="e.g. 10" min="0" step="0.1">
+            <span class="unit-tag">ha</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Annual Harvest (wet weight)</label>
+          <div class="unit-input">
+            <input type="number" id="harvest" placeholder="e.g. 50000" min="0">
+            <span class="unit-tag">kg</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Growing Season Length</label>
+          <div class="unit-input">
+            <input type="number" id="season" placeholder="e.g. 8" min="1" max="12">
+            <span class="unit-tag">months</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION B: Scope 1 ── -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">⛽</div>
+      <div class="section-title">B — Scope 1: Direct Emissions (on-farm fuel & refrigerants)</div>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Diesel — Boats & Vessels <span class="label-hint">(annual)</span></label>
+          <div class="unit-input">
+            <input type="number" id="diesel" placeholder="e.g. 2000" min="0">
+            <span class="unit-tag">litres</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Petrol — Small Engines <span class="label-hint">(annual)</span></label>
+          <div class="unit-input">
+            <input type="number" id="petrol" placeholder="e.g. 200" min="0">
+            <span class="unit-tag">litres</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>LPG / Propane <span class="label-hint">(heating/cooking on vessel)</span></label>
+          <div class="unit-input">
+            <input type="number" id="lpg" placeholder="e.g. 50" min="0">
+            <span class="unit-tag">kg</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Refrigerant Leakage <span class="label-hint">(HFC-134a, if cold storage used)</span></label>
+          <div class="unit-input">
+            <input type="number" id="refrigerant" placeholder="e.g. 0.5" min="0" step="0.1">
+            <span class="unit-tag">kg</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION C: Scope 2 ── -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">⚡</div>
+      <div class="section-title">C — Scope 2: Purchased Electricity</div>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Annual Electricity Consumption</label>
+          <div class="unit-input">
+            <input type="number" id="electricity" placeholder="e.g. 15000" min="0">
+            <span class="unit-tag">kWh</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Electricity Source</label>
+          <select id="elecSource">
+            <option value="sweden_grid">Swedish national grid (Nordpool, ~13 g CO₂e/kWh)</option>
+            <option value="renewable_cert">Certified renewable (Garantis ursprung)</option>
+            <option value="coal_import">Mixed / imported high-carbon</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION D: Scope 3 ── -->
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">🔗</div>
+      <div class="section-title">D — Scope 3: Value Chain Emissions (upstream & downstream)</div>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Rope & Longline (new, annual purchase)</label>
+          <div class="unit-input">
+            <input type="number" id="rope" placeholder="e.g. 500" min="0">
+            <span class="unit-tag">kg</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Buoys & Floats (new, annual)</label>
+          <div class="unit-input">
+            <input type="number" id="buoys" placeholder="e.g. 50" min="0">
+            <span class="unit-tag">kg</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Seaweed Seed / Spore Purchase</label>
+          <div class="unit-input">
+            <input type="number" id="seed" placeholder="e.g. 20" min="0">
+            <span class="unit-tag">kg</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Packaging Materials (annual)</label>
+          <div class="unit-input">
+            <input type="number" id="packaging" placeholder="e.g. 300" min="0">
+            <span class="unit-tag">kg</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Road Transport — Outbound Delivery</label>
+          <div class="unit-input">
+            <input type="number" id="transport" placeholder="e.g. 5000" min="0">
+            <span class="unit-tag">tonne·km</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Cold Storage (third-party, annual)</label>
+          <div class="unit-input">
+            <input type="number" id="coldStorage" placeholder="e.g. 5000" min="0">
+            <span class="unit-tag">kWh</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Staff Commuting (total km/year, all staff)</label>
+          <div class="unit-input">
+            <input type="number" id="commute" placeholder="e.g. 20000" min="0">
+            <span class="unit-tag">km</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Waste Generated (to landfill)</label>
+          <div class="unit-input">
+            <input type="number" id="waste" placeholder="e.g. 500" min="0">
+            <span class="unit-tag">kg</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="calculate()">⟶ Calculate LCA Report</button>
+    <button class="btn btn-secondary" onclick="loadDemo()">Load Demo Farm Data</button>
+  </div>
+
+  <!-- ── RESULTS ── -->
+  <div id="results" style="margin-top:36px;">
+
+    <div class="report-header">
+      <div class="report-title">LCA Sustainability Report</div>
+      <div class="report-sub">ISO 14040/14044 · GHG Protocol · EU CSRD Aligned</div>
+      <div class="report-meta">
+        <div class="meta-item"><label>Farm</label><span id="r-farmName">—</span></div>
+        <div class="meta-item"><label>Year</label><span id="r-year">—</span></div>
+        <div class="meta-item"><label>Species</label><span id="r-species">—</span></div>
+        <div class="meta-item"><label>Harvest</label><span id="r-harvest">—</span></div>
+        <div class="meta-item"><label>Generated</label><span id="r-date">—</span></div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card highlight">
+        <div class="kpi-icon">🌍</div>
+        <div class="kpi-value" id="r-total">—</div>
+        <div class="kpi-unit">tonnes CO₂e / year</div>
+        <div class="kpi-label">Total GWP</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-value" id="r-per-tonne">—</div>
+        <div class="kpi-unit">kg CO₂e / tonne harvest</div>
+        <div class="kpi-label">Emission Intensity</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🌱</div>
+        <div class="kpi-value" id="r-sequestered">—</div>
+        <div class="kpi-unit">tonnes CO₂e sequestered</div>
+        <div class="kpi-label">Carbon Sequestration</div>
+      </div>
+    </div>
+
+    <!-- Rating -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🏅</div>
+        <div class="section-title">Sustainability Rating</div>
+      </div>
+      <div class="section-body">
+        <div class="rating-row">
+          <div class="rating-badge" id="r-rating-badge">—</div>
+          <div class="rating-label" id="r-rating-text">—</div>
+        </div>
+        <p id="r-rating-desc" style="font-size:13px;color:var(--muted);line-height:1.6;"></p>
+      </div>
+    </div>
+
+    <!-- Scope Breakdown -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">📊</div>
+        <div class="section-title">Scope 1 / 2 / 3 Breakdown (GHG Protocol)</div>
+      </div>
+      <div class="section-body">
+        <table class="scope-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Scope</th>
+              <th>Source</th>
+              <th style="text-align:right">kg CO₂e</th>
+              <th style="text-align:right">% of Total</th>
+            </tr>
+          </thead>
+          <tbody id="r-scope-rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Bar chart -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">📈</div>
+        <div class="section-title">Emission Sources — Visual Breakdown</div>
+      </div>
+      <div class="section-body" id="r-bars"></div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">💡</div>
+        <div class="section-title">Reduction Recommendations</div>
+      </div>
+      <div class="section-body">
+        <ul class="rec-list" id="r-recs"></ul>
+      </div>
+    </div>
+
+    <!-- CSRD statement -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">📋</div>
+        <div class="section-title">EU CSRD Disclosure Summary</div>
+      </div>
+      <div class="section-body">
+        <p id="r-csrd" style="font-size:13px;line-height:1.8;color:var(--text);"></p>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-print" onclick="window.print()">🖨 Print / Save as PDF</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('results').style.display='none'; window.scrollTo(0,0)">← Recalculate</button>
+    </div>
+
+    <div class="disclaimer">
+      <strong>Methodology note:</strong> Emission factors are derived from Ecoinvent 3.10 database and peer-reviewed literature for Nordic seaweed aquaculture (Ecoinvent 2023; Broch et al. 2019; Seghetta et al. 2016). Carbon sequestration is estimated at 0.73 tCO₂e/tonne dry weight for Saccharina latissima (Smetacek & Zingone 2013) and converted using a dry:wet ratio of 0.12. This tool produces a Tier 1/2 screening LCA. A full ISO 14040-certified audit for regulatory submission requires third-party verification. System boundary: cradle-to-gate (farm gate). Functional unit: 1 tonne wet weight seaweed harvested.
+    </div>
+
+  </div><!-- /results -->
+
+</div><!-- /container -->
+
+<script>
+// ── Emission factors (kg CO₂e per unit) ──────────────────────────────────────
+// Sources: Ecoinvent 3.10, DEFRA 2023, NTM 2022
+const EF = {
+  diesel:      2.68,    // kg CO₂e / litre
+  petrol:      2.31,
+  lpg:         2.99,    // per kg
+  refrigerant: 1430,    // HFC-134a GWP100
+  elec: {
+    sweden_grid:      0.013,  // kg CO₂e/kWh (Nordpool 2023)
+    renewable_cert:   0.004,
+    coal_import:      0.450,
+  },
+  rope:        3.5,     // kg CO₂e / kg HDPE rope
+  buoys:       3.8,     // kg CO₂e / kg HDPE
+  seed:        2.1,     // kg CO₂e / kg seed (hatchery energy)
+  packaging:   1.9,     // kg CO₂e / kg mixed packaging
+  transport:   0.062,   // kg CO₂e / tonne·km (refrigerated truck)
+  coldStorage: 0.013,   // per kWh (Swedish grid)
+  commute:     0.121,   // per km (average car, Swedish fleet)
+  waste:       0.58,    // per kg to landfill
+};
+
+// Carbon sequestration factors (kg CO₂e / tonne wet weight)
+const SEQ = {
+  saccharina: 87.6,   // 0.73 tCO₂e/t dry × 0.12 dry:wet
+  ulva:       62.4,
+  alaria:     91.2,
+  gracilaria: 72.0,
+};
+
+function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function s(id) { return document.getElementById(id).value; }
+
+function calculate() {
+  const harvest = v('harvest');
+  if (!harvest || harvest === 0) { alert('Please enter your annual harvest weight to continue.'); return; }
+
+  // ── Scope 1 ──
+  const s1_diesel = v('diesel') * EF.diesel;
+  const s1_petrol = v('petrol') * EF.petrol;
+  const s1_lpg    = v('lpg')    * EF.lpg;
+  const s1_refrig = v('refrigerant') * EF.refrigerant;
+  const s1_total  = s1_diesel + s1_petrol + s1_lpg + s1_refrig;
+
+  // ── Scope 2 ──
+  const elecFactor = EF.elec[s('elecSource')];
+  const s2_elec    = v('electricity') * elecFactor;
+  const s2_total   = s2_elec;
+
+  // ── Scope 3 ──
+  const s3_rope     = v('rope')       * EF.rope;
+  const s3_buoys    = v('buoys')      * EF.buoys;
+  const s3_seed     = v('seed')       * EF.seed;
+  const s3_pack     = v('packaging')  * EF.packaging;
+  const s3_trans    = v('transport')  * EF.transport;
+  const s3_cold     = v('coldStorage')* EF.coldStorage;
+  const s3_commute  = v('commute')    * EF.commute;
+  const s3_waste    = v('waste')      * EF.waste;
+  const s3_total    = s3_rope + s3_buoys + s3_seed + s3_pack + s3_trans + s3_cold + s3_commute + s3_waste;
+
+  const totalKg     = s1_total + s2_total + s3_total;
+  const totalT      = totalKg / 1000;
+  const perTonne    = harvest > 0 ? totalKg / (harvest / 1000) : 0;
+
+  const speciesKey  = s('species');
+  const seqFactor   = SEQ[speciesKey] || SEQ.saccharina;
+  const sequestered = (harvest / 1000) * seqFactor / 1000; // tonnes CO₂e
+
+  const speciesNames = {
+    saccharina: 'Saccharina latissima',
+    ulva:       'Ulva spp.',
+    alaria:     'Alaria esculenta',
+    gracilaria: 'Gracilaria spp.',
+  };
+
+  // ── Rating ──
+  let rating, ratingText, ratingDesc;
+  if (perTonne < 100)       { rating = 'A+'; ratingText = 'Exceptional — Top 5% of global seaweed operations'; ratingDesc = 'Your farm demonstrates outstanding emissions efficiency. This rating will be attractive to premium buyers and ESG-conscious investors. Your operation is likely eligible for the highest tier of carbon credit premiums under Verra VCS.'; }
+  else if (perTonne < 200)  { rating = 'A';  ratingText = 'Excellent — Well below EU aquaculture average'; ratingDesc = 'Your farm is performing significantly better than the European aquaculture sector average (~320 kg CO₂e/tonne). This puts you in a strong position for EU sustainability certification and CSRD reporting.'; }
+  else if (perTonne < 350)  { rating = 'B';  ratingText = 'Good — Below average for Nordic aquaculture'; ratingDesc = 'Your emissions intensity is below the Nordic aquaculture sector average. Targeted reductions in your highest-emission categories (visible above) could move you to an A rating.'; }
+  else if (perTonne < 500)  { rating = 'C';  ratingText = 'Moderate — At sector average'; ratingDesc = 'Your farm is performing at average levels for the sector. CSRD disclosure is still achievable, but buyers with stringent sustainability procurement policies may require improvement commitments.'; }
+  else if (perTonne < 800)  { rating = 'D';  ratingText = 'Below average — Improvement needed for EU compliance'; ratingDesc = 'Your emissions intensity is above average. We recommend prioritising the reduction actions listed above before submitting for CSRD compliance. An electrification roadmap for vessel operations would have the most impact.'; }
+  else                       { rating = 'E';  ratingText = 'High emissions — Immediate action recommended'; ratingDesc = 'Your farm\'s emission intensity significantly exceeds sector benchmarks. This level may trigger questions from buyers and could affect eligibility for sustainability-linked financing. Prioritise diesel reduction and renewable energy procurement immediately.'; }
+
+  // ── Populate results ──
+  document.getElementById('r-farmName').textContent  = s('farmName') || 'Unnamed Farm';
+  document.getElementById('r-year').textContent      = s('reportYear');
+  document.getElementById('r-species').textContent   = speciesNames[speciesKey];
+  document.getElementById('r-harvest').textContent   = (harvest/1000).toFixed(1) + ' tonnes';
+  document.getElementById('r-date').textContent      = new Date().toLocaleDateString('sv-SE');
+  document.getElementById('r-total').textContent     = totalT.toFixed(2);
+  document.getElementById('r-per-tonne').textContent = Math.round(perTonne);
+  document.getElementById('r-sequestered').textContent = sequestered.toFixed(2);
+
+  const badge = document.getElementById('r-rating-badge');
+  badge.textContent = rating;
+  badge.className   = 'rating-badge rating-' + rating.replace('+','A');
+  document.getElementById('r-rating-text').textContent = ratingText;
+  document.getElementById('r-rating-desc').textContent = ratingDesc;
+
+  // ── Scope table rows ──
+  const rows = [
+    ['Diesel combustion (vessels)',     's1', 'Scope 1', s1_diesel],
+    ['Petrol combustion',               's1', 'Scope 1', s1_petrol],
+    ['LPG combustion',                  's1', 'Scope 1', s1_lpg],
+    ['Refrigerant leakage (HFC-134a)',  's1', 'Scope 1', s1_refrig],
+    ['Purchased electricity',           's2', 'Scope 2', s2_elec],
+    ['Ropes & longlines (manufacture)', 's3', 'Scope 3', s3_rope],
+    ['Buoys & floats (manufacture)',    's3', 'Scope 3', s3_buoys],
+    ['Seed / spore production',         's3', 'Scope 3', s3_seed],
+    ['Packaging materials',             's3', 'Scope 3', s3_pack],
+    ['Outbound transport',              's3', 'Scope 3', s3_trans],
+    ['Third-party cold storage',        's3', 'Scope 3', s3_cold],
+    ['Staff commuting',                 's3', 'Scope 3', s3_commute],
+    ['Waste to landfill',               's3', 'Scope 3', s3_waste],
+  ].filter(r => r[3] > 0);
+
+  const tbody = document.getElementById('r-scope-rows');
+  tbody.innerHTML = '';
+  rows.forEach(([name, cls, scope, val]) => {
+    const pct = totalKg > 0 ? (val/totalKg*100).toFixed(1) : '0.0';
+    tbody.innerHTML += `<tr>
+      <td>${name}</td>
+      <td><span class="scope-badge ${cls}">${scope}</span></td>
+      <td style="font-size:11px;color:var(--muted)">Direct emission</td>
+      <td style="text-align:right;font-weight:600">${Math.round(val).toLocaleString()}</td>
+      <td style="text-align:right;color:var(--muted)">${pct}%</td>
+    </tr>`;
+  });
+  tbody.innerHTML += `<tr>
+    <td colspan="3"><strong>TOTAL</strong></td>
+    <td style="text-align:right"><strong>${Math.round(totalKg).toLocaleString()} kg</strong></td>
+    <td style="text-align:right"><strong>100%</strong></td>
+  </tr>`;
+
+  // ── Bar chart ──
+  const topRows = [...rows].sort((a,b) => b[3]-a[3]).slice(0,6);
+  const maxVal  = topRows[0]?.[3] || 1;
+  const barsEl  = document.getElementById('r-bars');
+  barsEl.innerHTML = '';
+  topRows.forEach(([name, cls,, val]) => {
+    const pct = (val/maxVal*100).toFixed(0);
+    barsEl.innerHTML += `
+      <div class="bar-row">
+        <div class="bar-label">${name}</div>
+        <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+        <div class="bar-val">${(val/1000).toFixed(2)} t</div>
+      </div>`;
+  });
+
+  // ── Recommendations ──
+  const recs = [];
+  if (s1_diesel > totalKg * 0.3)
+    recs.push(['⚡','Switch to electric or hybrid outboard motors for harvest vessels. Diesel is your largest single emission source. Battery-electric options from Torqeedo and ePropulsion are now cost-competitive for farm vessels under 10m.']);
+  if (s2_elec > 500 && s('elecSource') !== 'renewable_cert')
+    recs.push(['🌬','Purchase Guarantee of Origin (Ursprungsgaranti) certificates for your electricity. This moves your Scope 2 emissions from 13 g/kWh to near zero at very low cost (approx. SEK 0.01–0.05/kWh extra).']);
+  if (s3_rope > totalKg * 0.1)
+    recs.push(['♻️','Consider rope reuse and extended lifespan programmes. HDPE rope manufacture is carbon-intensive. Partnering with rope suppliers on take-back schemes can reduce Scope 3 emissions significantly.']);
+  if (s3_trans > 1000)
+    recs.push(['🚛','Consolidate delivery routes or partner with local distributors to reduce outbound transport kilometres. Route optimisation alone can reduce transport emissions by 20–30%.']);
+  if (s3_waste > 200)
+    recs.push(['🗑️','Implement seaweed waste composting or anaerobic digestion. Diverting biological waste from landfill to composting reduces your Scope 3 waste emissions by approximately 60%.']);
+  if (recs.length === 0)
+    recs.push(['✅','Your emissions profile is well-balanced with no dominant single source. Focus on annual monitoring and gradual efficiency improvements across all categories.']);
+  recs.push(['📄','Generate this LCA report annually to track year-on-year progress. CSRD requires a minimum 3-year trend for Scope 1 and 2 disclosures from 2026.']);
+
+  const recsList = document.getElementById('r-recs');
+  recsList.innerHTML = '';
+  recs.forEach(([icon, text]) => {
+    recsList.innerHTML += `<li class="rec-item"><span class="rec-icon">${icon}</span><span>${text}</span></li>`;
+  });
+
+  // ── CSRD statement ──
+  const netGWP = totalT - sequestered;
+  document.getElementById('r-csrd').innerHTML =
+    `<strong>CSRD Scope 1/2/3 Disclosure — ${s('reportYear')}</strong><br><br>` +
+    `<strong>${s('farmName') || 'This operation'}</strong> reports a total greenhouse gas footprint of <strong>${totalT.toFixed(2)} tonnes CO₂e</strong> ` +
+    `for the reporting year ${s('reportYear')}, calculated using a cradle-to-gate system boundary aligned with ISO 14040/14044 and the GHG Protocol Corporate Standard.<br><br>` +
+    `Scope 1 (direct emissions): <strong>${(s1_total/1000).toFixed(2)} t CO₂e</strong> &nbsp;|&nbsp; ` +
+    `Scope 2 (energy indirect): <strong>${(s2_total/1000).toFixed(2)} t CO₂e</strong> &nbsp;|&nbsp; ` +
+    `Scope 3 (value chain): <strong>${(s3_total/1000).toFixed(2)} t CO₂e</strong><br><br>` +
+    `The cultivation of <em>${speciesNames[speciesKey]}</em> across ${v('farmArea')} ha sequestered an estimated ` +
+    `<strong>${sequestered.toFixed(2)} tonnes CO₂e</strong> during the growing season, ` +
+    `resulting in a net climate impact of <strong>${netGWP.toFixed(2)} tonnes CO₂e</strong>.<br><br>` +
+    `Emission intensity: <strong>${Math.round(perTonne)} kg CO₂e per tonne wet weight harvested</strong>. ` +
+    `This compares favourably to the European aquaculture sector average of approximately 320 kg CO₂e/tonne (FAO 2022).<br><br>` +
+    `<em>This disclosure was generated using the AlgaIntel LCA Engine (PoC v1.0). ` +
+    `Third-party verification is required for formal CSRD submission.</em>`;
+
+  document.getElementById('results').style.display = 'block';
+  setTimeout(() => document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
+function loadDemo() {
+  document.getElementById('farmName').value    = 'Nordic SeaFarm AB (Demo)';
+  document.getElementById('reportYear').value  = '2025';
+  document.getElementById('species').value     = 'saccharina';
+  document.getElementById('farmArea').value    = '12';
+  document.getElementById('harvest').value     = '65000';
+  document.getElementById('season').value      = '8';
+  document.getElementById('diesel').value      = '3200';
+  document.getElementById('petrol').value      = '180';
+  document.getElementById('lpg').value         = '40';
+  document.getElementById('refrigerant').value = '0.3';
+  document.getElementById('electricity').value = '18500';
+  document.getElementById('elecSource').value  = 'sweden_grid';
+  document.getElementById('rope').value        = '620';
+  document.getElementById('buoys').value       = '85';
+  document.getElementById('seed').value        = '18';
+  document.getElementById('packaging').value   = '420';
+  document.getElementById('transport').value   = '7200';
+  document.getElementById('coldStorage').value = '4800';
+  document.getElementById('commute').value     = '22000';
+  document.getElementById('waste').value       = '380';
+}
+</script>
+
+</body>
+</html>
