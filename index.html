@@ -318,7 +318,7 @@
 
   <div class="intro">
     <h2>Life Cycle Assessment Calculator</h2>
-    <p>Enter your seaweed farm's annual operational data below. The engine calculates your farm's carbon footprint (GWP) across Scope 1, 2, and 3 emissions following ISO 14040/14044 methodology, and generates a report aligned with EU CSRD requirements. All emission factors are based on published scientific literature and the Ecoinvent database.</p>
+    <p>Enter your green farm's annual operational data below. The engine calculates your farm's carbon footprint (GWP) across Scope 1, 2, and 3 emissions following ISO 14040/14044 methodology, and generates a report aligned with EU CSRD requirements. All emission factors are based on published scientific literature and the Ecoinvent database.</p>
   </div>
 
   <!-- ── SECTION A: Farm Info ── -->
@@ -338,7 +338,7 @@
           <input type="number" id="reportYear" value="2025" min="2020" max="2030">
         </div>
         <div class="form-group">
-          <label>Primary Seaweed Species</label>
+          <label>Primary green Species</label>
           <select id="species">
             <option value="saccharina">Saccharina latissima (Sugar kelp)</option>
             <option value="ulva">Ulva spp. (Sea lettuce)</option>
@@ -461,7 +461,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label>Seaweed Seed / Spore Purchase</label>
+          <label>green Seed / Spore Purchase</label>
           <div class="unit-input">
             <input type="number" id="seed" placeholder="e.g. 20" min="0">
             <span class="unit-tag">kg</span>
@@ -622,7 +622,7 @@
     </div>
 
     <div class="disclaimer">
-      <strong>Methodology note:</strong> Emission factors are derived from Ecoinvent 3.10 database and peer-reviewed literature for Nordic seaweed aquaculture (Ecoinvent 2023; Broch et al. 2019; Seghetta et al. 2016). Carbon sequestration is estimated at 0.73 tCO₂e/tonne dry weight for Saccharina latissima (Smetacek & Zingone 2013) and converted using a dry:wet ratio of 0.12. This tool produces a Tier 1/2 screening LCA. A full ISO 14040-certified audit for regulatory submission requires third-party verification. System boundary: cradle-to-gate (farm gate). Functional unit: 1 tonne wet weight seaweed harvested.
+      <strong>Methodology note:</strong> Emission factors are derived from Ecoinvent 3.10 database and peer-reviewed literature for Nordic green aquaculture (Ecoinvent 2023; Broch et al. 2019; Seghetta et al. 2016). Carbon sequestration is estimated at 0.73 tCO₂e/tonne dry weight for Saccharina latissima (Smetacek & Zingone 2013) and converted using a dry:wet ratio of 0.12. This tool produces a Tier 1/2 screening LCA. A full ISO 14040-certified audit for regulatory submission requires third-party verification. System boundary: cradle-to-gate (farm gate). Functional unit: 1 tonne wet weight green harvested.
     </div>
 
   </div><!-- /results -->
@@ -707,7 +707,7 @@ function calculate() {
 
   // ── Rating ──
   let rating, ratingText, ratingDesc;
-  if (perTonne < 100)       { rating = 'A+'; ratingText = 'Exceptional — Top 5% of global seaweed operations'; ratingDesc = 'Your farm demonstrates outstanding emissions efficiency. This rating will be attractive to premium buyers and ESG-conscious investors. Your operation is likely eligible for the highest tier of carbon credit premiums under Verra VCS.'; }
+  if (perTonne < 100)       { rating = 'A+'; ratingText = 'Exceptional — Top 5% of global green operations'; ratingDesc = 'Your farm demonstrates outstanding emissions efficiency. This rating will be attractive to premium buyers and ESG-conscious investors. Your operation is likely eligible for the highest tier of carbon credit premiums under Verra VCS.'; }
   else if (perTonne < 200)  { rating = 'A';  ratingText = 'Excellent — Well below EU aquaculture average'; ratingDesc = 'Your farm is performing significantly better than the European aquaculture sector average (~320 kg CO₂e/tonne). This puts you in a strong position for EU sustainability certification and CSRD reporting.'; }
   else if (perTonne < 350)  { rating = 'B';  ratingText = 'Good — Below average for Nordic aquaculture'; ratingDesc = 'Your emissions intensity is below the Nordic aquaculture sector average. Targeted reductions in your highest-emission categories (visible above) could move you to an A rating.'; }
   else if (perTonne < 500)  { rating = 'C';  ratingText = 'Moderate — At sector average'; ratingDesc = 'Your farm is performing at average levels for the sector. CSRD disclosure is still achievable, but buyers with stringent sustainability procurement policies may require improvement commitments.'; }
@@ -791,7 +791,7 @@ function calculate() {
   if (s3_trans > 1000)
     recs.push(['🚛','Consolidate delivery routes or partner with local distributors to reduce outbound transport kilometres. Route optimisation alone can reduce transport emissions by 20–30%.']);
   if (s3_waste > 200)
-    recs.push(['🗑️','Implement seaweed waste composting or anaerobic digestion. Diverting biological waste from landfill to composting reduces your Scope 3 waste emissions by approximately 60%.']);
+    recs.push(['🗑️','Implement green waste composting or anaerobic digestion. Diverting biological waste from landfill to composting reduces your Scope 3 waste emissions by approximately 60%.']);
   if (recs.length === 0)
     recs.push(['✅','Your emissions profile is well-balanced with no dominant single source. Focus on annual monitoring and gradual efficiency improvements across all categories.']);
   recs.push(['📄','Generate this LCA report annually to track year-on-year progress. CSRD requires a minimum 3-year trend for Scope 1 and 2 disclosures from 2026.']);
